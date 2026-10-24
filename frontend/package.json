@@ -19,12 +19,12 @@
   "devDependencies": {
     "@playwright/test": "^1.61.1",
     "@testing-library/vue": "^8.1.0",
-    "@vitejs/plugin-vue": "^4.3.0",
-    "@vitest/coverage-v8": "^4.1.10",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "@vitest/coverage-v8": "^4.1.12",
     "jsdom": "^29.1.1",
     "typescript": "^6.0.3",
-    "vite": "^5.4.0",
-    "vitest": "^4.1.7",
+    "vite": "^6.4.5",
+    "vitest": "^4.1.12",
     "vue-tsc": "^3.3.4"
   }
 }
