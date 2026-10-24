@@ -112,3 +112,7 @@ Idées non implémentées : multi-compte avec espaces de stockage cloisonnés pa
 utilisateur, système de sauvegarde pour la maintenance. Suivi personnel du
 projet (backlog, historique des phases, audits) dans `.perso/`, séparé du
 code pour ne pas polluer la racine du repo.
+
+## Licence
+
+AGPL-3.0-or-later : voir [LICENSE](LICENSE).
