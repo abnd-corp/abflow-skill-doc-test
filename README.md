@@ -1,34 +1,24 @@
 # AbFlow
 
-Gestionnaire de fichiers et de photos **self-hosted**, pensé pour tourner sur un
-Raspberry Pi (ou tout petit serveur) à la maison. Upload, organisation en
-timeline, partage temporaire, et une API en lecture seule pour brancher
-d'autres apps (écran de veille, dashboard…) sans exposer tout le reste.
+English · [Français](README.fr.md)
 
-Usage personnel — pas de multi-compte pour l'instant (voir [Roadmap](#roadmap)).
+**Self-hosted** file and photo manager, designed to run on a Raspberry Pi (or any small server) at home. Upload, timeline organisation, temporary sharing, and a read-only API to plug in other apps (screensaver, dashboard…) without exposing everything else.
 
-## Fonctionnalités
+Personal use: no multi-account support for now (see [Roadmap](#roadmap)).
 
-- **Upload** multi-fichiers avec vraie barre de progression, tous types de
-  fichiers acceptés (images, vidéos, audio, documents, archives…)
-- **Timeline** groupée par jour, recherche par nom, tri (date/nom/taille),
-  filtres par type, sélection multiple avec suppression groupée
-- **Visionneuse** intégrée : lightbox images (swipe mobile, clavier ← → Échap),
-  lecteur vidéo/audio, aperçu PDF
-- **Détection de doublons** à l'upload (empreinte sha256) — un fichier déjà
-  présent est rejeté avant même d'être écrit sur le disque
-- **Métadonnées** : nom de fichier original, type MIME, dimensions d'image,
-  EXIF sur les photos (modèle d'appareil, date de prise de vue réelle utilisée
-  pour le groupement par jour — jamais le GPS, même si présent dans le fichier)
-- **Partage** : lien temporaire (24h par défaut) vers un fichier, sans donner
-  accès au reste de l'espace
-- **Quota de stockage** configurable, avec barre d'usage visible dans l'app
-- **Clés API** nommées, générées et révocables depuis l'interface — pour
-  connecter une app externe en lecture seule, restreinte aux images
-- **PWA** installable (iOS/Android/desktop), thème sombre, mobile-first
-- **Stockage** local ou SFTP distant, au choix via `.env`
-- **Sécurité** : headers durcis (helmet, CSP, HSTS), JWT à algorithme figé,
-  rate limiting sur login/upload/partage, conteneurs non-root
+## Features
+
+- **Upload** of several files at once with a real progress bar; every file type is accepted (images, videos, audio, documents, archives…)
+- **Timeline** grouped by day, search by name, sorting (date/name/size), filters by type, multi-select with bulk delete
+- **Built-in viewer**: image lightbox (mobile swipe, keyboard ← → Esc), video/audio player, PDF preview
+- **Duplicate detection** on upload (sha256 fingerprint): a file that already exists is rejected before it is written to disk
+- **Metadata**: original file name, MIME type, image dimensions, EXIF on photos (camera model, real shooting date used for day grouping, never the GPS data, even if present in the file)
+- **Sharing**: temporary link (24 h by default) to a single file, without giving access to anything else
+- **Storage quota**, configurable, with a usage bar in the app
+- **Named API keys**, generated and revocable from the interface, to connect an external app in read-only mode, restricted to images
+- **PWA**: installable (iOS/Android/desktop), dark theme, mobile-first
+- **Storage**: local or remote SFTP, chosen in `.env`
+- **Security**: hardened headers (helmet, CSP, HSTS), fixed JWT algorithm, rate limiting on login/upload/sharing, non-root containers
 
 ## Stack
 
@@ -36,83 +26,70 @@ Usage personnel — pas de multi-compte pour l'instant (voir [Roadmap](#roadmap)
 |---|---|
 | Frontend | Vue 3 + TypeScript (`<script setup>`), Vite |
 | Backend | Node.js + Express |
-| Auth | bcrypt + JWT (24h) + rate limiting sur le login |
-| Déploiement | Docker Compose, image nginx pour le frontend |
+| Auth | bcrypt + JWT (24 h) + rate limiting on login |
+| Deployment | Docker Compose, nginx image for the frontend |
 | Tests | `node --test` + supertest (backend) · Vitest + Testing Library (frontend) · Playwright (e2e) |
 
-## Démarrage rapide
+## Quick start
 
-Prérequis : Docker, Docker Compose, Node.js 20+ (pour le mode dev avec hot-reload).
-
-```bash
-cp .env.example .env   # remplir AUTH_PASSWORD, JWT_SECRET (voir commentaires dans le fichier)
-make dev                # backend en Docker + frontend Vite avec hot-reload
-```
-
-Autres commandes utiles (voir `make help`) :
+Requirements: Docker, Docker Compose, Node.js 20+ (for dev mode with hot reload).
 
 ```bash
-make up       # build + démarre tout en Docker (prod-like, HTTP)
-make https    # idem avec certificat auto-signé
-make status   # état des services + URL
-make e2e      # stack isolée + suite Playwright
+cp .env.example .env   # fill in AUTH_PASSWORD, JWT_SECRET (see comments in the file)
+make dev                # backend in Docker + Vite frontend with hot reload
 ```
 
-L'app démarre sur `http://localhost:8080`. Le premier compte se configure
-entièrement via `.env` (`AUTH_USERNAME` / `AUTH_PASSWORD`) — pas d'inscription,
-c'est un seul compte personnel.
+Other useful commands (see `make help`):
+
+```bash
+make up       # build + start everything in Docker (prod-like, HTTP)
+make https    # same, with a self-signed certificate
+make status   # services state + URL
+make e2e      # isolated stack + Playwright suite
+```
+
+The app starts on `http://localhost:8080`. The first account is configured entirely through `.env` (`AUTH_USERNAME` / `AUTH_PASSWORD`): there is no sign-up, it is a single personal account.
 
 ## Configuration
 
-Toute la configuration passe par `.env` (voir `.env.example` pour la liste
-complète et commentée) : identifiants, secret JWT, origines CORS autorisées,
-type de stockage (local ou SFTP), quota optionnel, nom de l'app affiché.
+Everything is configured through `.env` (see `.env.example` for the full, commented list): credentials, JWT secret, allowed CORS origins, storage type (local or SFTP), optional quota, displayed app name.
 
-Les clés API pour les intégrations externes ne se configurent plus par
-variable d'environnement — elles se génèrent depuis l'interface (icône clé
-dans le header une fois connecté).
+API keys for external integrations are no longer set through an environment variable: they are generated from the interface (key icon in the header once logged in).
 
-## Déploiement
+## Deployment
 
-En production, l'app tourne derrière [Traefik](https://traefik.io/traefik/)
-(routing + HTTPS Let's Encrypt) et se met à jour automatiquement via
-[Watchtower](https://containrrr.dev/watchtower/) : chaque push sur `main` qui
-passe la CI build et publie des images sur GHCR, que Watchtower détecte et
-redéploie sans intervention manuelle. Voir `docker-compose.prod.yml`.
+In production the app runs behind [Traefik](https://traefik.io/traefik/) (routing + Let's Encrypt HTTPS) and updates itself through [Watchtower](https://containrrr.dev/watchtower/): every push to `main` that passes CI builds and publishes images to GHCR, which Watchtower detects and redeploys with no manual step. See `docker-compose.prod.yml`.
 
 ## Tests
 
 ```bash
-cd backend  && npm test              # 102 tests (node --test + supertest), ~99% de couverture
-cd frontend && npm test              # 154 tests unitaires (Vitest), ~99.8% de couverture (lignes)
-cd frontend && npm run test:coverage # rapport de couverture détaillé
+cd backend  && npm test              # 102 tests (node --test + supertest), ~99% coverage
+cd frontend && npm test              # 154 unit tests (Vitest), ~99.8% line coverage
+cd frontend && npm run test:coverage # detailed coverage report
 cd frontend && npm run typecheck
-make e2e                             # parcours critique de bout en bout (Playwright)
+make e2e                             # critical end-to-end path (Playwright)
 ```
 
-## Structure du projet
+## Project layout
 
 ```
-backend/            API Express — auth, upload, stockage, partage, clés API
-  storage/          Adaptateurs de stockage (local, SFTP)
+backend/            Express API: auth, upload, storage, sharing, API keys
+  storage/          Storage adapters (local, SFTP)
   tests/
 frontend/
   src/
-    views/           Login, Timeline (fichiers), Upload, Settings (clés API)
-    components/       Header, navigation basse, footer
-    composables/      Logique réutilisable (auth, appels API, stats)
-  e2e/               Suite Playwright
-docker-compose.yml            Développement / usage local
-docker-compose.prod.yml       Production (images GHCR, Traefik, Watchtower)
+    views/           Login, Timeline (files), Upload, Settings (API keys)
+    components/      Header, bottom navigation, footer
+    composables/     Reusable logic (auth, API calls, stats)
+  e2e/               Playwright suite
+docker-compose.yml            Development / local use
+docker-compose.prod.yml       Production (GHCR images, Traefik, Watchtower)
 ```
 
 ## Roadmap
 
-Idées non implémentées : multi-compte avec espaces de stockage cloisonnés par
-utilisateur, système de sauvegarde pour la maintenance. Suivi personnel du
-projet (backlog, historique des phases, audits) dans `.perso/`, séparé du
-code pour ne pas polluer la racine du repo.
+Not implemented yet: multi-account with storage spaces separated per user, a backup system for maintenance.
 
 ## Licence
 
-AGPL-3.0-or-later : voir [LICENSE](LICENSE).
+AGPL-3.0-or-later: see [LICENSE](LICENSE).
